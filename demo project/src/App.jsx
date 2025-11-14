@@ -1,47 +1,52 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
-import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 
+// Components
 import Navbar from "./components/Navbar";
-import AdminDashboard from "./pages/AdminDashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+// Pages
 import ForgotPassword from "./pages/ForgotPassword";
 import Home from "./pages/Home";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
-import UserDashboard from "./pages/UserDashboard";
+
+// Dashboards
+import AdminDashboardLayout from "./layout/AdminDasboardLayout";
+import CandidateDashboardLayout from "./layout/CandidateDashboardLayout";
 
 function App() {
   return (
     <Router>
       <AuthProvider>
         <Navbar />
+
         <Routes>
-          {/* Public Routes */}
+          {/* Public routes */}
           <Route path="/" element={<Home />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
 
-          {/* Protected Routes */}
+          {/* Admin dashboard */}
           <Route
             path="/admin-dashboard"
             element={
-              <ProtectedRoute allowedRoles={["ROLE_ADMIN"]}>
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/user-dashboard"
-            element={
-              <ProtectedRoute allowedRoles={["ROLE_USER"]}>
-                <UserDashboard />
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminDashboardLayout />   {/* ✅ FIXED */}
               </ProtectedRoute>
             }
           />
 
-          {/* Fallback */}
-          <Route path="*" element={<SignIn />} />
+          {/* User dashboard */}
+          <Route
+            path="/user-dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["USER", "STUDENT"]}>
+                <CandidateDashboardLayout />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </AuthProvider>
     </Router>

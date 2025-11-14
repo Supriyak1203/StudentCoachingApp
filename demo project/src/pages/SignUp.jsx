@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import signUpImg from "../assets/signUpImg.jpg";
 import { useAuth } from "../context/AuthContext";
 
 export default function SignUp() {
   const { signup } = useAuth();
-  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     name: "",
@@ -22,15 +21,13 @@ export default function SignUp() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (form.password !== form.confirmPassword) {
       alert("⚠️ Passwords do not match!");
       return;
     }
-    try {
-      await signup(form); // AuthContext handles navigation
-    } catch (err) {
-      alert(err.message);
-    }
+
+    await signup(form);
   };
 
   return (
@@ -38,6 +35,7 @@ export default function SignUp() {
       className="flex justify-center items-center min-h-screen bg-cover bg-center"
       style={{ backgroundImage: `url(${signUpImg})` }}
     >
+      {/* Glass Effect Form */}
       <form
         onSubmit={handleSubmit}
         className="flex flex-col gap-4 w-full max-w-md p-8 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/30 shadow-2xl"
@@ -92,8 +90,12 @@ export default function SignUp() {
           onChange={handleChange}
           className="w-full p-2 rounded-lg border border-orange-400 bg-transparent text-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500"
         >
-          <option value="user" className="text-black">User</option>
-          <option value="admin" className="text-black">Admin</option>
+          <option value="user" className="text-black">
+            User
+          </option>
+          <option value="admin" className="text-black">
+            Admin
+          </option>
         </select>
 
         <button
@@ -102,6 +104,13 @@ export default function SignUp() {
         >
           Register
         </button>
+
+        <p className="text-center mt-3 text-sm text-white/90">
+          Already have an account?{" "}
+          <Link to="/signin" className="text-orange-400 hover:underline font-semibold">
+            Sign In
+          </Link>
+        </p>
       </form>
     </div>
   );

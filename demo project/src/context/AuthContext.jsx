@@ -18,46 +18,61 @@ export function AuthProvider({ children }) {
       body: JSON.stringify(formData),
     });
 
+    const text = await response.text();
     let data;
-    try { data = await response.json(); } catch { data = null; }
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = text;
+    }
 
-    if (!response.ok) throw new Error(data?.message || "Signup failed");
+    if (!response.ok)
+      throw new Error(typeof data === "string" ? data : data.message);
 
-    alert("✅ Registration successful! Please sign in.");
+    alert("✅ Registration successful!");
     navigate("/signin");
     return data;
   };
 
   // ------------------ SIGNIN ------------------
   const signin = async (formData) => {
-    const response = await fetch("http://localhost:8080/auth/signin", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
+  const response = await fetch("http://localhost:8080/auth/signin", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(formData),
+  });
 
-    let data;
-    try { data = await response.json(); } catch { data = null; }
+  const text = await response.text();
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = text;
+  }
 
-    if (!response.ok) throw new Error(data?.message || "Signin failed");
+  if (!response.ok)
+    throw new Error(typeof data === "string" ? data : data.message);
 
-    const loggedInUser = {
-      email: formData.email,
-      role: data.role,
-      token: data.token,
-      name: data.name,
-    };
+  if (typeof data === "object") {
+    // ✅ Save user object
+    localStorage.setItem("user", JSON.stringify(data));
 
-    setUser(loggedInUser);
-    localStorage.setItem("user", JSON.stringify(loggedInUser));
+    // ✅ Save token separately (this was missing!)
+    localStorage.setItem("token", data.token);
 
-    alert("✅ Signin successful!");
+    setUser(data);
 
-    if (data.role === "ROLE_ADMIN") navigate("/admin-dashboard");
-    else navigate("/user-dashboard");
+    // ✅ Redirect based on role
+    if (data.role === "ADMIN") {
+      navigate("/admin-dashboard");
+    } else {
+      navigate("/user-dashboard");
+    }
+  }
 
-    return loggedInUser;
-  };
+  alert("✅ Signin successful!");
+  return data;
+};
 
   // ------------------ RESET PASSWORD ------------------
   const resetPassword = async (email, newPassword) => {
@@ -67,12 +82,18 @@ export function AuthProvider({ children }) {
       body: JSON.stringify({ email, newPassword }),
     });
 
+    const text = await response.text();
     let data;
-    try { data = await response.json(); } catch { data = null; }
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = text;
+    }
 
-    if (!response.ok) throw new Error(data?.message || "Password reset failed");
+    if (!response.ok)
+      throw new Error(typeof data === "string" ? data : data.message);
 
-    alert("✅ Password reset successful! Please sign in.");
+    alert("✅ " + (typeof data === "string" ? data : data.message));
     navigate("/signin");
     return data;
   };
@@ -86,7 +107,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, token: user?.token, signup, signin, resetPassword, logout }}
+      value={{ user, signup, signin, resetPassword, logout }}
     >
       {children}
     </AuthContext.Provider>
